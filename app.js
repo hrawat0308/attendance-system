@@ -3,11 +3,12 @@ const express = require('express');
 let bodyParser = require('body-parser');
 const morgan = require('morgan');
 const routes = require('./Router/index');
+const cors = require('cors');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.use(cors());
 
 
 morgan.token('id', function getId(req) {

@@ -1,5 +1,5 @@
 const model = require('../models/index');
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const { validationResult, matchedData } = require('express-validator');
 const moment = require('moment');
 
@@ -74,13 +74,20 @@ const fetchAttendance = async (req, res, next) => {
         }
         let { date } = req.query;
         const attendance = await model.Attendance.findAll({
+            attributes: [
+                'emp_id',
+                [fn('min', col('dateTime')), 'checkedIn'],
+                [fn('max', col('dateTime')), 'checkedOut'],
+            ],
+            include: { model: model.Employees, require: true, attributes: ['name', 'email'] },
             where: {
                 dateTime: {
                     [Op.between]: [`${date} 00:00:00`, `${date} 23:59:59`],
                 },
-            }, raw: true
+            },
+            group: ['emp_id'],
         });
-        res.json({ status: 1, attendance });
+        res.json({ status: 1, attendance, message: ["attendance fetched"] });
     }
     catch (error) {
         console.log(error);
